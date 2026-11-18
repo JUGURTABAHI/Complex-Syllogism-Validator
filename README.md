@@ -165,7 +165,6 @@ The project is organized into two main modules: `Proposition` and `Predicats`.
 │   └── ValiditeViaNegation.ml
 │
 ├── dune-project
-├── rapport.pdf
 ├── README.md
 └── .gitignore
 ```
