@@ -1,138 +1,156 @@
-Validation de syllogismes complexes à l'aide des diagrammes de Venn
+# Complex Syllogism Validator
 
-Implémentation en OCaml de méthodes de validation logique fondées sur les diagrammes de Venn.
+**Validation of complex syllogisms using Venn diagrams**
 
-![Language](https://img.shields.io/badge/Language-OCaml-EC7A00?logo=ocaml) ![Build](https://img.shields.io/badge/Build-Dune-blue)
+![Language](https://img.shields.io/badge/Language-OCaml-EC7A00?logo=ocaml)
+![Build](https://img.shields.io/badge/Build-Dune-blue)
 
-Présentation
+---
 
-Ce projet consiste à développer un programme capable de déterminer automatiquement la validité de syllogismes complexes à l'aide de diagrammes de Venn.
+## Overview
 
-Contrairement aux syllogismes classiques, limités à une structure relativement simple, les syllogismes étudiés ici peuvent combiner plusieurs propositions logiques à l'aide d'opérateurs booléens : conjonction, disjonction et négation.
+This project implements an automated system for validating complex syllogisms using Venn diagrams.
 
-L'objectif est de construire une représentation formelle de ces raisonnements, de les traduire en diagrammes de Venn, puis de vérifier leur validité à travers deux algorithmes indépendants :
+Unlike traditional syllogisms, which generally involve simple categorical propositions, complex syllogisms can combine multiple logical statements using Boolean operators such as conjunction, disjunction and negation.
 
-Un algorithme naïf fondé sur la génération des extensions complètes des diagrammes.
-Un algorithme fondé sur la négation de la conclusion et la recherche de contradictions.
+The objective is to formally represent these logical expressions, translate them into Venn diagrams and determine their validity using two independent algorithms:
 
-Le projet met en œuvre des concepts de logique propositionnelle, de logique des prédicats et de programmation fonctionnelle en OCaml.
+- A naive algorithm based on the generation of complete diagram extensions.
+- A negation-based algorithm that checks for contradictions between the premises and the negated conclusion.
 
-1. Fondements logiques
-1.1. Qu'est-ce qu'un syllogisme ?
+The project combines concepts from propositional logic, predicate logic and functional programming in OCaml.
 
-Un syllogisme est un raisonnement déductif constitué de prémisses et d'une conclusion.
+---
 
-Un raisonnement est valide lorsque la vérité de toutes ses prémisses garantit nécessairement celle de sa conclusion.
+## 1. Logical Foundations
 
-Exemple :
+### 1.1. What Is a Syllogism?
 
-Tous les mammifères sont des animaux.
-Tous les chiens sont des mammifères.
-Donc, tous les chiens sont des animaux.
+A syllogism is a deductive argument consisting of premises and a conclusion.
 
-La conclusion découle nécessairement des deux prémisses : le raisonnement est valide.
+A syllogism is valid when the truth of all its premises necessarily guarantees the truth of its conclusion.
 
-À l'inverse :
+**Example of a valid syllogism:**
 
-Tous les chiens sont des animaux.
-Tous les chats sont des animaux.
-Donc, tous les chats sont des chiens.
+- All mammals are animals.
+- All dogs are mammals.
+- Therefore, all dogs are animals.
 
-Les prémisses peuvent être vraies sans que la conclusion le soit : le raisonnement est invalide.
+The conclusion necessarily follows from the premises.
 
-1.2. Les quatre formes catégoriques
+**Example of an invalid syllogism:**
 
-La syllogistique traditionnelle distingue quatre formes de propositions :
+- All dogs are animals.
+- All cats are animals.
+- Therefore, all cats are dogs.
 
-Type	Nom	Forme logique	Signification
-A	Universelle affirmative	Tout S est P	S est inclus dans P
-E	Universelle négative	Aucun S n'est P	S et P sont disjoints
-I	Particulière affirmative	Certains S sont P	S et P ont une intersection non vide
-O	Particulière négative	Certains S ne sont pas P	Une partie de S se trouve hors de P
+The premises may be true without the conclusion being true.
 
-Ces formes permettent de représenter les contraintes imposées aux ensembles dans un diagramme de Venn.
+### 1.2. The Four Categorical Propositions
 
-1.3. Syllogismes complexes
+Traditional syllogistic logic distinguishes four types of categorical propositions:
 
-Le projet étend cette représentation aux formules combinant plusieurs propositions syllogistiques.
+| Type | Name | Logical Form | Meaning |
+|---|---|---|---|
+| A | Universal Affirmative | All S are P | S is included in P |
+| E | Universal Negative | No S are P | S and P are disjoint |
+| I | Particular Affirmative | Some S are P | S and P have a non-empty intersection |
+| O | Particular Negative | Some S are not P | Part of S lies outside P |
 
-Les opérateurs pris en charge sont :
+These four forms define the fundamental constraints represented by Venn diagrams.
 
-ET : conjonction de deux contraintes.
-OU : disjonction de deux contraintes.
-NON : négation d'une contrainte.
-VRAI : formule toujours satisfaite.
-FAUX : formule toujours insatisfaite.
+### 1.3. Complex Syllogisms
 
-Les syllogismes complexes sont représentés sous forme d'arbres syntaxiques, permettant de combiner librement ces opérateurs.
+This project extends traditional syllogistic reasoning by allowing multiple propositions to be combined using Boolean operators.
 
-1.4. Définition formelle de la validité
+Supported operators include:
 
-Soient P₁, P₂, ..., Pₙ les prémisses et C la conclusion.
+- **AND:** conjunction of two logical constraints.
+- **OR:** disjunction of two logical constraints.
+- **NOT:** negation of a logical constraint.
+- **TRUE:** a proposition that is always satisfied.
+- **FALSE:** a proposition that is never satisfied.
 
-Le syllogisme est valide si :
+Complex syllogisms are represented using recursive algebraic data types, forming logical syntax trees.
 
+### 1.4. Formal Definition of Validity
+
+Let `P₁, P₂, ..., Pₙ` represent the premises and `C` represent the conclusion.
+
+A syllogism is valid if:
+
+```text
 (P₁ ∧ P₂ ∧ ... ∧ Pₙ) ⇒ C
+```
 
-est une tautologie.
+is a tautology.
 
-Une formulation équivalente consiste à vérifier que :
+Equivalently, validity can be established by checking whether:
 
+```text
 P₁ ∧ P₂ ∧ ... ∧ Pₙ ∧ ¬C
+```
 
-est insatisfaisable.
+is unsatisfiable.
 
-Autrement dit, il ne doit exister aucune interprétation dans laquelle toutes les prémisses sont satisfaites et la conclusion est fausse.
+In other words, there must be no interpretation in which all premises are satisfied while the conclusion is false.
 
-Cette propriété constitue le fondement du second algorithme du projet.
+This property is the theoretical foundation of the second validation algorithm.
 
-2. Représentation par diagrammes de Venn
-2.1. Principe
+---
 
-Un diagramme de Venn permet de représenter les relations entre plusieurs ensembles.
+## 2. Venn Diagram Representation
 
-Dans ce projet, chaque diagramme est modélisé par une association entre des zones et leur état logique.
+### 2.1. Principle
 
-Une zone correspond à une combinaison de prédicats positifs ou négatifs.
+Venn diagrams provide a graphical representation of relationships between sets.
 
-Pour deux prédicats A et B, on distingue quatre zones :
+In this project, each diagram is represented as a mapping between regions and their logical states.
 
-Zone	Représentation	Signification
-1	A ∩ B	Appartient à A et à B
-2	A ∩ ¬B	Appartient à A, mais pas à B
-3	¬A ∩ B	Appartient à B, mais pas à A
-4	¬A ∩ ¬B	N'appartient ni à A ni à B
-2.2. États des zones
+A region corresponds to a combination of positive and negative predicates.
 
-Chaque zone peut prendre trois états :
+For two predicates A and B, four regions can be distinguished:
 
-Vide : la zone est nécessairement vide.
-NonVide : la zone contient nécessairement au moins un élément.
-Absence de contrainte : la zone reste indéterminée.
+| Region | Representation | Meaning |
+|---|---|---|
+| 1 | A ∩ B | Belongs to both A and B |
+| 2 | A ∩ ¬B | Belongs to A but not B |
+| 3 | ¬A ∩ B | Belongs to B but not A |
+| 4 | ¬A ∩ ¬B | Belongs to neither A nor B |
 
-Cette représentation permet de traduire les propositions logiques en contraintes sur les ensembles.
+### 2.2. Region States
 
-2.3. Structures de données
+Each region can have three possible states:
 
-Les diagrammes sont représentés à l'aide des modules Set et Map de la bibliothèque standard OCaml.
+- `Vide`: the region must be empty.
+- `NonVide`: the region must contain at least one element.
+- **Undefined:** no constraint is imposed on the region.
 
-ocaml
+This representation allows logical propositions to be translated into constraints on sets.
+
+### 2.3. Data Structures
+
+Diagrams are represented using OCaml's standard `Set` and `Map` modules.
+
+```ocaml
 module Predicate_set = Set.Make(String)
 module Diag = Map.Make(Predicate_set)
 
 type fill = Vide | NonVide
 type diagramme = fill Diag.t
+```
 
+The map keys represent regions as sets of predicates.
 
-Les clés de la map représentent les zones, sous forme d'ensembles de prédicats.
+This representation makes it possible to manipulate logical constraints and compare diagrams efficiently.
 
-Cette représentation permet de manipuler efficacement les contraintes logiques et de comparer les diagrammes entre eux.
+---
 
-3. Architecture du projet
+## 3. Project Architecture
 
-Le projet est organisé en deux modules principaux : Proposition et Predicats.
+The project is organized into two main modules: `Proposition` and `Predicats`.
 
-text
+```text
 .
 ├── Proposition/
 │   ├── dune
@@ -147,164 +165,183 @@ text
 │   └── ValiditeViaNegation.ml
 │
 ├── dune-project
+├── rapport.pdf
 ├── README.md
 └── .gitignore
+```
 
-3.1. Module Proposition
+### 3.1. Proposition Module
 
-Formule.ml
+#### `Formule.ml`
 
-Ce module constitue la base de la représentation logique.
+This module provides the foundation for logical formula representation.
 
-Il définit les formules propositionnelles et fournit les opérations nécessaires à leur manipulation, notamment l'évaluation des formules et la génération de tables de vérité.
+It defines propositional formulas and provides operations for manipulating and evaluating them, including truth-table generation.
 
-Il prend en charge différents opérateurs logiques, notamment :
+Supported operators include:
 
-Implication.
-Conjonction et disjonction.
-Négation.
-NAND, NOR, XOR et XNOR.
-Équivalence et différence.
-Plusieurs opérateurs logiques à trois arguments.
-3.2. Module Predicats
+- Implication.
+- Conjunction and disjunction.
+- Negation.
+- NAND, NOR, XOR and XNOR.
+- Equivalence and difference.
+- Several three-argument logical operators.
 
-Formule_Syllogisme.ml
+### 3.2. Predicats Module
 
-Définit les structures permettant de représenter les formules syllogistiques.
+#### `Formule_Syllogisme.ml`
 
-Deux quantificateurs sont utilisés :
+Defines the structures used to represent syllogistic formulas.
 
-PourTout : contrainte universelle.
-IlExiste : contrainte existentielle.
+Two quantifiers are supported:
 
-Les formules syllogistiques peuvent ensuite être combinées à l'aide d'opérateurs booléens.
+- `PourTout`: universal quantification.
+- `IlExiste`: existential quantification.
 
-DiagVenn.ml
+Syllogistic formulas can then be combined using Boolean operators.
 
-Contient les structures de données et les opérations sur les diagrammes de Venn :
+#### `DiagVenn.ml`
 
-Construction d'un diagramme à partir d'une formule.
-Négation d'un diagramme.
-Conjonction et disjonction.
-Gestion des listes de diagrammes.
-Vérification de compatibilité.
-Manipulation des zones.
+Implements the data structures and operations required to manipulate Venn diagrams:
 
-ValiditeNaive.ml
+- Construction of diagrams from formulas.
+- Diagram negation.
+- Conjunction and disjunction.
+- Diagram list operations.
+- Compatibility checking.
+- Region manipulation.
 
-Implémente le premier algorithme de validation, fondé sur la génération des extensions complètes des diagrammes.
+#### `ValiditeNaive.ml`
 
-ValiditeViaNegation.ml
+Implements the first validation algorithm, based on the generation of complete diagram extensions.
 
-Implémente le second algorithme, fondé sur la négation de la conclusion et la recherche de contradictions.
+#### `ValiditeViaNegation.ml`
 
-Test.ml
+Implements the second validation algorithm, based on the negation of the conclusion and contradiction detection.
 
-Regroupe les tests permettant de vérifier le comportement des différentes fonctionnalités et des algorithmes de validation.
+#### `Test.ml`
 
-4. Opérations sur les diagrammes
+Contains tests for the different functionalities and validation algorithms.
 
-Le module DiagVenn.ml fournit les opérations nécessaires à la manipulation des représentations logiques.
+---
 
-Opération	Description
-diag_from_formule	Transforme une formule syllogistique en diagramme(s) de Venn.
-Négation	Génère les diagrammes représentant la négation d'un diagramme.
-Négation de liste	Applique la négation à une liste de diagrammes.
-Conjonction	Combine deux diagrammes compatibles.
-Conjonction de listes	Génère les combinaisons compatibles de deux listes.
-Disjonction	Représente la disjonction de deux diagrammes compatibles.
-Disjonction de listes	Combine les diagrammes de deux listes.
-Compatibilité	Vérifie si les contraintes de deux diagrammes peuvent coexister.
-Conversion d'une formule en diagramme
+## 4. Operations on Venn Diagrams
 
-La fonction diag_from_formule traduit une formule syllogistique en une ou plusieurs représentations sous forme de diagrammes.
+The `DiagVenn.ml` module provides the operations required to manipulate logical representations.
 
-Pour une formule universelle, elle identifie les zones devant être vides.
-Pour une formule existentielle, elle génère les possibilités correspondant aux zones devant contenir au moins un élément.
+| Operation | Description |
+|---|---|
+| `diag_from_formule` | Converts a syllogistic formula into one or more Venn diagrams. |
+| Diagram negation | Generates diagrams representing the negation of a diagram. |
+| List negation | Applies negation to a list of diagrams. |
+| Conjunction | Combines two compatible diagrams. |
+| List conjunction | Generates compatible combinations of two diagram lists. |
+| Disjunction | Represents the disjunction of two compatible diagrams. |
+| List disjunction | Combines diagrams from two lists. |
+| Compatibility | Checks whether two diagrams have compatible constraints. |
 
-Cette conversion constitue le point de départ des algorithmes de validation.
+### 4.1. Formula-to-Diagram Conversion
 
-5. Algorithmes de validation
+The `diag_from_formule` function translates a syllogistic formula into one or more Venn diagram representations.
 
-Deux méthodes complémentaires sont implémentées pour déterminer la validité d'un syllogisme complexe.
+- For universal formulas, it identifies the regions that must be empty.
+- For existential formulas, it generates the possible diagrams corresponding to regions that must contain at least one element.
 
-5.1. Algorithme naïf — ValiditeNaive.ml
+This conversion is the starting point of both validation algorithms.
 
-Cette première méthode repose sur la génération des extensions complètes des diagrammes de prémisses.
+---
 
-Une extension complète consiste à attribuer un état à chacune des zones encore indéterminées.
+## 5. Validation Algorithms
 
-Pour chaque diagramme de prémisses :
+Two complementary approaches are implemented to determine the validity of complex syllogisms.
 
-Générer toutes ses extensions complètes.
-Examiner chaque extension.
-Vérifier si elle contredit tous les diagrammes possibles de la conclusion.
-Si une telle extension existe, le syllogisme est invalide.
+### 5.1. Naive Algorithm
 
-Principe :
+**File:** `ValiditeNaive.ml`
 
-Il existe une extension complète des prémisses qui contredit toutes les possibilités de la conclusion si et seulement si le syllogisme est invalide.
+The first approach relies on generating all complete extensions of the premise diagrams.
 
-Complexité :
+A complete extension assigns a state to every previously undefined region.
 
-Si k représente le nombre de zones indéterminées, le nombre d'extensions possibles est exponentiel :
+For each premise diagram:
 
-2ᵏ
+1. Generate all its complete extensions.
+2. Examine each extension.
+3. Check whether it contradicts every possible conclusion diagram.
+4. If such an extension exists, the syllogism is invalid.
 
-Cette approche peut donc devenir coûteuse lorsque le nombre de zones augmente.
+#### Principle
 
-5.2. Algorithme par négation — ValiditeViaNegation.ml
+A syllogism is invalid if and only if there exists a complete extension of the premises that contradicts every possible conclusion diagram.
 
-Le second algorithme utilise directement la caractérisation logique de la validité.
+#### Complexity
 
-Au lieu d'énumérer toutes les extensions possibles, il cherche à déterminer si les prémisses peuvent être satisfaites simultanément avec la négation de la conclusion.
+If `k` represents the number of undefined regions, the number of possible extensions is exponential:
 
-Principe :
+```text
+2^k
+```
 
-Prémisses ∧ ¬Conclusion = ∅ ⇔ Syllogisme valide
+Consequently, this approach can become expensive as the number of regions increases.
 
-Étapes :
+### 5.2. Negation-Based Algorithm
 
-Calculer la négation de la conclusion.
-Combiner les diagrammes des prémisses avec ceux de la négation de la conclusion.
-Éliminer les combinaisons incompatibles.
-Examiner le résultat :
-Liste vide : le syllogisme est valide.
-Liste non vide : le syllogisme est invalide.
+**File:** `ValiditeViaNegation.ml`
 
-Cette méthode évite la génération exhaustive des extensions complètes.
+The second approach directly uses the logical characterization of validity.
 
-5.3. Comparaison des deux algorithmes
-Critère	Algorithme naïf	Algorithme par négation
-Fichier	ValiditeNaive.ml	ValiditeViaNegation.ml
-Principe	Génération des extensions	Négation de la conclusion
-Recherche	Contre-exemples complets	Contradictions
-Complexité	Exponentielle en nombre de zones indéterminées	Dépend des combinaisons de diagrammes
-Avantage	Approche directe et exhaustive	Évite l'énumération exhaustive des extensions
+Instead of generating all possible extensions, it checks whether the premises can be satisfied simultaneously with the negation of the conclusion.
 
-L'approche par négation constitue une alternative plus efficace lorsque le nombre de zones indéterminées devient important.
+#### Principle
 
-6. Exemples de formules
-Syllogisme universel
+```text
+Premises ∧ ¬Conclusion = ∅ ⇔ Syllogism is valid
+```
 
-« Tous les B sont des A. »
+#### Steps
 
-Représentation :
+1. Compute the negation of the conclusion.
+2. Combine the premise diagrams with the diagrams representing the negated conclusion.
+3. Eliminate incompatible combinations.
+4. Examine the result:
+   - **Empty list:** the syllogism is valid.
+   - **Non-empty list:** the syllogism is invalid.
 
-ocaml
+This approach avoids exhaustive generation of complete extensions.
+
+### 5.3. Algorithm Comparison
+
+| Criterion | Naive Algorithm | Negation-Based Algorithm |
+|---|---|---|
+| File | `ValiditeNaive.ml` | `ValiditeViaNegation.ml` |
+| Principle | Complete extensions | Negation of conclusion |
+| Search | Complete counterexamples | Contradictions |
+| Complexity | Exponential in undefined regions | Depends on diagram combinations |
+| Advantage | Exhaustive approach | Avoids exhaustive extension generation |
+
+The negation-based approach provides an alternative that can be more efficient when the number of undefined regions becomes large.
+
+---
+
+## 6. Formula Examples
+
+### 6.1. Universal Syllogistic Formula
+
+**Statement:** "All B are A."
+
+```ocaml
 Base (
   PourTout (
     Imp (Atome "b", Atome "a")
   )
 )
+```
 
-Syllogisme existentiel
+### 6.2. Existential Syllogistic Formula
 
-« Il existe un B qui n'est pas A. »
+**Statement:** "There exists a B that is not A."
 
-Représentation :
-
-ocaml
+```ocaml
 Base (
   IlExiste (
     Et (
@@ -313,14 +350,13 @@ Base (
     )
   )
 )
+```
 
-Syllogisme complexe
+### 6.3. Complex Syllogism
 
-« Soit tous les B sont des A, soit il existe un B qui n'est pas A. »
+**Statement:** "Either all B are A, or there exists a B that is not A."
 
-Représentation :
-
-ocaml
+```ocaml
 Ou (
   Base (
     PourTout (
@@ -336,57 +372,57 @@ Ou (
     )
   )
 )
+```
 
+These examples illustrate how simple syllogistic formulas can be combined using Boolean operators to construct more complex logical expressions.
 
-Ces exemples illustrent la construction de formules syllogistiques simples et leur combinaison à l'aide d'opérateurs booléens.
+---
 
-7. Choix techniques
+## 7. Technical Choices
 
-Le projet repose sur une approche fonctionnelle en OCaml.
+The project relies on functional programming principles in OCaml.
 
-Plusieurs choix techniques ont été privilégiés :
+Several technical choices were made:
 
-Structures persistantes : utilisation de Map et Set pour représenter les diagrammes et leurs zones.
-Types algébriques : représentation explicite des formules et des opérateurs logiques.
-Récursivité terminale : utilisation d'accumulateurs pour certaines fonctions manipulant des listes ou des arbres syntaxiques.
-Récursivité non terminale : utilisée lorsque la reconstruction d'un résultat nécessite de combiner les résultats des appels récursifs.
+- **Persistent data structures:** `Map` and `Set` are used to represent diagrams and their regions.
+- **Algebraic data types:** formulas and logical operators are explicitly represented using recursive types.
+- **Tail recursion:** accumulators are used in selected functions to efficiently process lists and syntax trees.
+- **Non-tail recursion:** used when constructing results requires combining the results of recursive calls.
 
-L'objectif est de conserver une représentation claire des objets logiques tout en facilitant leur manipulation.
+These choices provide a clear representation of logical objects while facilitating their manipulation.
 
-8. Installation et compilation
-Prérequis
-OCaml
-Dune
-Compilation
+---
 
-Depuis la racine du dépôt :
+## 8. Installation and Compilation
 
-bash
+### 8.1. Requirements
+
+- OCaml
+- Dune
+
+### 8.2. Build
+
+From the root directory of the project, run:
+
+```bash
 dune build
+```
 
-Exécution des tests
-bash
-dune exec ./Predicats/Test.exe
+### 8.3. Run Tests
 
+```bash
+dune exec ./Predicats/Test.ml
+```
 
-Cette commande suppose que l'exécutable Test est déclaré dans le fichier Predicats/dune.
+This command assumes that the `Test` executable is declared in `Predicats/dune`.
 
-9. Rapport
+---
 
-Le rapport complet du projet est disponible ici :
+## 10. Author
 
-📄 Consulter le rapport de projet
+**Jugurta BAHI**
 
-Il présente notamment les fondements théoriques, les structures de données, les opérations sur les diagrammes de Venn, les propriétés démontrées, les deux algorithmes de validation ainsi que les difficultés rencontrées lors du développement.
+- **Supervisor:** Ludovic Mignot
+- **Date:** December 21, 2025
 
-10. Auteur
-
-Jugurta BAHI
-
-Projet réalisé dans le cadre d'un projet universitaire.
-
-Encadrant : Ludovic Mignot
-
-Date : 21 décembre 2025
-
-Projet de formalisation logique et de programmation fonctionnelle en OCaml.
+Academic project on logical formalization and functional programming in OCaml.
