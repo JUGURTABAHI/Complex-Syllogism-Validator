@@ -1,0 +1,8 @@
+open Proposition
+open Formule
+open Predicats
+open Formule_Syllogisme
+open DiagVenn
+open ValiditeNaive
+open ValiditeViaNegation
+open Test

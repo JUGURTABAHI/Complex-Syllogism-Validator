@@ -1,0 +1,13 @@
+_build/
+*.cmi
+*.cmo
+*.cmx
+*.cma
+*.cmxa
+*.cmxs
+*.a
+*.o
+*.swp
+*~
+.DS_Store
+
